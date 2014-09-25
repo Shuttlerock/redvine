@@ -72,7 +72,7 @@ class Redvine
 
   def user_profile(uid)
     raise(ArgumentError, 'You must specify a user id') if !uid
-    get_request_data("users/profiles/#{uid}", {}, false)
+    get_request_data("users/profiles/#{uid}", {})
   end
 
   def user_timeline(uid, opts={})
@@ -108,7 +108,7 @@ class Redvine
     }
   end
 
-  def get_request_data(endpoint, query={}, records=true)
+  def get_request_data(endpoint, query={})
     raise Redvine::AuthenticationRequiredError unless @vine_key
 
     query.merge!(:size => 20) if query.has_key?(:page) && !query.has_key?(:size)
@@ -120,7 +120,7 @@ class Redvine
       response['error'] = true
       return Hashie::Mash.new(response)
     else
-      records ? Hashie::Mash.new(response).data.records : Hashie::Mash.new(response).data
+      Hashie::Mash.new(response)
     end
   end
 
