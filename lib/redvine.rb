@@ -27,13 +27,17 @@ class Redvine
 
   def connect(opts={})
     validate_connect_args(opts)
+
+    if opts[:key]
+      @vine_key = opts[:key]
+      return @vine_key
+    end
+
     query = {username: opts[:email], password: opts[:password], deviceToken: @@deviceToken}
     headers = {'User-Agent' => @@userAgent}
     response = HTTParty.post(@@baseUrl + 'users/authenticate', {body: query, headers: headers})
     if opts[:skip_exception] || response['success']
       @vine_key = response.parsed_response['data']['key']
-      @username = response.parsed_response['data']['username']
-      @user_id = response.parsed_response['data']['userId']
     else
       raise Redvine::ConnectionError.new(response['code'].to_i), response['error']
     end
@@ -57,7 +61,7 @@ class Redvine
   end
 
   def likes(opts={})
-    user_likes(@user_id.to_s, opts)
+    user_likes('me', opts)
   end
 
   def following(uid,opts={})
@@ -94,8 +98,8 @@ class Redvine
 
   private
   def validate_connect_args(opts={})
-    unless opts.has_key?(:email) and opts.has_key?(:password)
-      raise(ArgumentError, 'You must specify both :email and :password')
+    unless (opts.has_key?(:email) and opts.has_key?(:password)) or opts.has_key?(:key)
+      raise(ArgumentError, 'You must specify both :email and :password, or :key')
     end
   end
 
