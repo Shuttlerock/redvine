@@ -22,6 +22,12 @@ Thanks also to [@kdonovan](https://github.com/kdonovan) and [@ruthgsp](https://g
     # Connect to Vine with an email and password
     client.connect(email: 'your@email.com', password: 'your_vine_password')
 
+    # OR save your login key and reuse it (safer to put in .env)
+    key = client.connect(email: 'your@email.com', password: 'your_vine_password')
+    # later, you can re-build the client
+    client = Redvine.new
+    client.connect(key: key)
+
     # Get your own timeline
     client.timeline
 
