@@ -106,17 +106,17 @@ class Redvine
   def session_headers
     {
       'User-Agent' => @@userAgent,
-      'vine-session-id' => @vine_key,
       'Accept' => '*/*',
       'Accept-Language' => 'en;q=1, fr;q=0.9, de;q=0.8, ja;q=0.7, nl;q=0.6, it;q=0.5'
     }
   end
 
   def get_request_data(endpoint, query={})
-    raise Redvine::AuthenticationRequiredError unless @vine_key
+    # raise Redvine::AuthenticationRequiredError unless @vine_key
 
     query.merge!(:size => 20) if query.has_key?(:page) && !query.has_key?(:size)
     args = {:headers => session_headers}
+    args.merge!('vine-session-id' => @vine_key) if @vine_key
     args.merge!(:query => query) if query != {}
     response = HTTParty.get(@@baseUrl + endpoint, args).parsed_response
     return Hashie::Mash.new(JSON.parse('{"success": false}')) if response.kind_of?(String)
