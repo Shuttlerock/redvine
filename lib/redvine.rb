@@ -57,19 +57,23 @@ class Redvine
   end
 
   def timeline(opts={})
+    raise Redvine::AuthenticationRequiredError unless @vine_key
     get_request_data('timelines/graph', opts)
   end
 
   def likes(opts={})
+    raise Redvine::AuthenticationRequiredError unless @vine_key
     user_likes('me', opts)
   end
 
-  def following(uid,opts={})
+  def following(uid, opts={})
+    raise Redvine::AuthenticationRequiredError unless @vine_key
     raise(ArgumentError, 'You must specify a user id') if !uid
     get_request_data("users/#{uid}/following", opts)
   end
 
-  def followers(uid,opts={})
+  def followers(uid, opts={})
+    raise Redvine::AuthenticationRequiredError unless @vine_key
     raise(ArgumentError, 'You must specify a user id') if !uid
     get_request_data("users/#{uid}/followers", opts)
   end
@@ -91,12 +95,24 @@ class Redvine
 
   def single_post(pid)
     raise(ArgumentError, 'You must specify a post id') if !pid
-    response = get_request_data("/timelines/posts/#{pid}")
+    if is_i?(pid)
+      response = get_request_data("/timelines/posts/#{pid}")
+    else
+      response = get_request_data("/timelines/posts/s/#{pid}")
+    end
     return response.kind_of?(Array) ? response.first : response
   end
 
+  def self.popular(opts={})
+    Redvine.new.popular(opts)
+  end
+
+  def self.user_profile(uid)
+    Redvine.new.user_profile(uid)
+  end
 
   private
+
   def validate_connect_args(opts={})
     unless (opts.has_key?(:email) and opts.has_key?(:password)) or opts.has_key?(:key)
       raise(ArgumentError, 'You must specify both :email and :password, or :key')
@@ -112,20 +128,23 @@ class Redvine
   end
 
   def get_request_data(endpoint, query={})
-    # raise Redvine::AuthenticationRequiredError unless @vine_key
-
     query.merge!(:size => 20) if query.has_key?(:page) && !query.has_key?(:size)
     args = {:headers => session_headers}
     args.merge!('vine-session-id' => @vine_key) if @vine_key
     args.merge!(:query => query) if query != {}
     response = HTTParty.get(@@baseUrl + endpoint, args).parsed_response
-    return Hashie::Mash.new(JSON.parse('{"success": false}')) if response.kind_of?(String)
-    if response['success'] == false
+    if response.kind_of?(String)
+      Hashie::Mash.new({"success" => false})
+    elsif response['success'] == false
       response['error'] = true
-      return Hashie::Mash.new(response)
+      Hashie::Mash.new(response)
     else
       Hashie::Mash.new(response)
     end
+  end
+
+  def is_i?(n)
+    n.is_a?(Integer) || !!(n =~ /\A[-+]?[0-9]+\z/)
   end
 
 end
