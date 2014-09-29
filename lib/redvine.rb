@@ -80,7 +80,11 @@ class Redvine
 
   def user_profile(uid)
     raise(ArgumentError, 'You must specify a user id') if !uid
-    get_request_data("users/profiles/#{uid}", {})
+    if is_i?(uid)
+      get_request_data("users/profiles/#{uid}", {})
+    else
+      get_request_data("users/profiles/vanity/#{uid}", {})
+    end
   end
 
   def user_timeline(uid, opts={})
@@ -109,6 +113,10 @@ class Redvine
 
   def self.user_profile(uid)
     Redvine.new.user_profile(uid)
+  end
+
+  def self.single_post(pid)
+    Redvine.new.single_post(pid)
   end
 
   private
