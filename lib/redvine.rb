@@ -141,16 +141,16 @@ class Redvine
     args.merge!('vine-session-id' => @vine_key) if @vine_key
     args.merge!(:query => query) if query != {}
     response = HTTParty.get(@@baseUrl + endpoint, args).parsed_response
-    if response.nil?
+    if response.nil? or response.kind_of?(String)
       Hashie::Mash.new({"success" => false, "error" => true})
-    elsif response.kind_of?(String)
-      Hashie::Mash.new({"success" => false})
     elsif response['success'] == false
       response['error'] = true
       Hashie::Mash.new(response)
     else
       Hashie::Mash.new(response)
     end
+  rescue Errno::ETIMEDOUT
+    Hashie::Mash.new({"success" => false, "error" => true})
   end
 
   def is_i?(n)
