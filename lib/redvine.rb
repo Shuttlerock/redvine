@@ -1,6 +1,8 @@
 require 'httparty'
 require 'hashie'
 require 'redvine/version'
+require 'uri'
+require 'securerandom'
 
 class Redvine
 
@@ -105,6 +107,11 @@ class Redvine
       response = get_request_data("/timelines/posts/s/#{pid}")
     end
     return response.kind_of?(Array) ? response.first : response
+  end
+
+  def search_posts(q, opts={})
+    raise(ArgumentError, 'You must specify a user id') if !q
+    get_request_data("posts/search/#{URI.escape uid}", opts)
   end
 
   def self.popular(opts={})

@@ -96,6 +96,40 @@ describe Redvine do
 
     end
 
+    describe '.search_posts' do
+
+      it 'should respond to a search_posts method' do
+        VCR.use_cassette('redvine') do
+          expect(client).to respond_to(:search_posts)
+        end
+      end
+
+      it 'should throw an error without a query' do
+        VCR.use_cassette('redvine') do
+          expect{ client.search_posts() }.to raise_error(ArgumentError)
+        end
+      end
+
+      it 'should return a result set with videoUrls when searching for a common keyword' do
+        VCR.use_cassette('redvine', :record => :new_episodes) do
+          vines = client.search_posts('cat')
+          expect(vines.count).to be > 1
+          expect(vines.first.videoUrl).to be_an_instance_of(String)
+          expect(vines.last.videoUrl).to be_an_instance_of(String)
+        end
+      end
+
+      it 'should return a second page of results' do
+        VCR.use_cassette('redvine', :record => :new_episodes) do
+          vines = client.search_posts('cat')
+          vinesp2 = client.search_posts('cat', :page => 2)
+          expect(vines).to_not equal(vinesp2)
+          expect(vines.first.videoUrl).to_not equal(vinesp2.first.videoUrl)
+        end
+      end
+
+    end
+
     describe '.popular' do
 
       it 'should respond to a popular method' do
