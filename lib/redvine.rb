@@ -111,7 +111,7 @@ class Redvine
 
   def search_posts(q, opts={})
     raise(ArgumentError, 'You must specify a user id') if !q
-    get_request_data("posts/search/#{URI.escape uid}", opts)
+    get_request_data("posts/search/#{URI.escape q}", opts)
   end
 
   def self.popular(opts={})
