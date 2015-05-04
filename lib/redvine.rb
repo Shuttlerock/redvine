@@ -47,7 +47,7 @@ class Redvine
 
   def search(tag, opts={})
     raise(ArgumentError, 'You must specify a tag') if !tag
-    get_request_data('timelines/tags/' + tag, opts)
+    get_request_data("timelines/tags/#{URI.escape tag}", opts)
   end
 
   def popular(opts={})
@@ -163,5 +163,4 @@ class Redvine
   def is_i?(n)
     n.is_a?(Integer) || !!(n =~ /\A[-+]?[0-9]+\z/)
   end
-
 end
